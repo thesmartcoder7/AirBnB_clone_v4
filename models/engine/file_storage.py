@@ -12,6 +12,7 @@ from models.place import Place
 from models.review import Review
 from models.state import State
 from models.user import User
+from hashlib import md5
 
 classes = {"Amenity": Amenity, "BaseModel": BaseModel, "City": City,
            "Place": Place, "Review": Review, "State": State, "User": User}
@@ -45,7 +46,9 @@ class FileStorage:
         """serializes __objects to the JSON file (path: __file_path)"""
         json_objects = {}
         for key in self.__objects:
-            json_objects[key] = self.__objects[key].to_dict()
+            if key == "password":
+                json_objects[key].decode()
+            json_objects[key] = self.__objects[key].to_dict(save_fs=1)
         with open(self.__file_path, 'w') as f:
             json.dump(json_objects, f)
 
@@ -72,7 +75,7 @@ class FileStorage:
 
     def get(self, cls, id):
         """
-        This Returns the object based on the class name and its ID, or
+        Returns the object based on the class name and its ID, or
         None if not found
         """
         if cls not in classes.values():
@@ -80,14 +83,14 @@ class FileStorage:
 
         all_cls = models.storage.all(cls)
         for value in all_cls.values():
-            if value.id == id:
+            if (value.id == id):
                 return value
 
         return None
 
     def count(self, cls=None):
         """
-        This counts and returns the number of objects in storage
+        count the number of objects in storage
         """
         all_class = classes.values()
 
